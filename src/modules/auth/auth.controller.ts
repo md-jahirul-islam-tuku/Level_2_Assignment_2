@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import { authService } from "./auth.service";
 import sendResponse from "../../utils/sendResponse";
 
-export const signup = async (req: Request, res: Response) => {
+const signup = async (req: Request, res: Response) => {
   try {
     const { name, email, password, role } = req.body;
     const user = await authService.signUpUser({ name, email, password, role });
@@ -29,9 +29,10 @@ export const signup = async (req: Request, res: Response) => {
   }
 };
 
-export const login = async (req: Request, res: Response) => {
+const login = async (req: Request, res: Response) => {
   try {
     const result = await authService.logInUser(req.body);
+    console.log(result);
 
     const { refreshToken } = result;
 
@@ -56,7 +57,7 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-export const refreshToken = async (req: Request, res: Response) => {
+const refreshToken = async (req: Request, res: Response) => {
   try {
     const result = await authService.generateRefreshToken(
       req.cookies.refreshToken,
@@ -75,4 +76,10 @@ export const refreshToken = async (req: Request, res: Response) => {
       error: error,
     });
   }
+};
+
+export const authController = {
+  signup,
+  login,
+  refreshToken,
 };

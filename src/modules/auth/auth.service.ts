@@ -31,7 +31,7 @@ const logInUser = async (payload: { email: string; password: string }) => {
     [email],
   );
   if (userData.rows.length === 0) {
-    throw new Error("Invalid Credentials!");
+    throw new Error("User not found");
   }
 
   const user = userData.rows[0];
@@ -39,7 +39,7 @@ const logInUser = async (payload: { email: string; password: string }) => {
   const matchedPassword = await bcrypt.compare(password, user.password);
 
   if (!matchedPassword) {
-    throw new Error("Invalid Credentials!");
+    throw new Error("Invalid password!");
   }
 
   //3. Generate Token
@@ -85,10 +85,6 @@ const generateRefreshToken = async (token: string) => {
 
   if (userData.rows.length === 0) {
     throw new Error("User not found!!");
-  }
-
-  if (!user?.is_active) {
-    throw new Error("Forbidden!!");
   }
 
   const jwtpayload = {
