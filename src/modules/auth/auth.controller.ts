@@ -19,11 +19,12 @@ const signup = async (req: Request, res: Response) => {
       message: "User registered successfully",
       data: user.rows[0],
     });
-  } catch (error: any) {
+  } catch (error) {
+    const err = error as Error;
     sendResponse(res, {
       statusCode: 500,
       success: false,
-      message: error.message,
+      message: err.message,
       error: error,
     });
   }
@@ -46,11 +47,12 @@ const login = async (req: Request, res: Response) => {
       message: "Login successfully!",
       data: { token, user },
     });
-  } catch (error: any) {
+  } catch (error) {
+    const err = error as Error;
     sendResponse(res, {
       statusCode: 500,
       success: false,
-      message: error.message,
+      message: err.message,
       error: error,
     });
   }
@@ -67,11 +69,12 @@ const refreshToken = async (req: Request, res: Response) => {
       message: "Access token generated!",
       data: result,
     });
-  } catch (error: any) {
+  } catch (error) {
+    const err = error as Error;
     sendResponse(res, {
       statusCode: 500,
       success: false,
-      message: error.message,
+      message: err.message,
       error: error,
     });
   }

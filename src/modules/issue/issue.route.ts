@@ -21,4 +21,10 @@ router.patch(
   issueController.updateIssue,
 );
 
+router.patch(
+  "/:id/status",
+  auth(USER_ROLE.maintainer),
+  issueController.updateIssueStatus,
+);
+
 export const issueRoutes = router;

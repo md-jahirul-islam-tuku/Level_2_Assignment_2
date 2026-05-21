@@ -24,11 +24,12 @@ const createIssue = async (req: AuthRequest, res: Response) => {
       message: "Issue created successfully",
       data: result,
     });
-  } catch (error: any) {
+  } catch (error) {
+    const err = error as Error;
     sendResponse(res, {
       statusCode: 500,
       success: false,
-      message: error.message,
+      message: err.message,
       error: error,
     });
   }
@@ -43,11 +44,12 @@ const getAllIssues = async (req: Request, res: Response): Promise<void> => {
       message: "All issues retrieved successfully",
       data: result,
     });
-  } catch (error: any) {
+  } catch (error) {
+    const err = error as Error;
     sendResponse(res, {
       statusCode: 500,
       success: false,
-      message: error.message,
+      message: err.message,
       error: error,
     });
   }
@@ -59,7 +61,8 @@ const getSingleIssue = async (req: Request, res: Response): Promise<void> => {
 
     // INVALID ID
     if (isNaN(id)) {
-      res.status(400).json({
+      sendResponse(res, {
+        statusCode: 400,
         success: false,
         message: "Invalid issue ID",
       });
@@ -85,11 +88,12 @@ const getSingleIssue = async (req: Request, res: Response): Promise<void> => {
       message: "Issue retrieved successfully",
       data: result,
     });
-  } catch (error: any) {
+  } catch (error) {
+    const err = error as Error;
     sendResponse(res, {
       statusCode: 500,
       success: false,
-      message: error.message,
+      message: err.message,
       error: error,
     });
   }
@@ -102,11 +106,11 @@ const updateIssue = async (req: AuthRequest, res: Response): Promise<void> => {
     const user = req.user;
 
     if (!user) {
-      res.status(401).json({
+      sendResponse(res, {
+        statusCode: 401,
         success: false,
         message: "Unauthorized access",
       });
-
       return;
     }
 
@@ -115,8 +119,8 @@ const updateIssue = async (req: AuthRequest, res: Response): Promise<void> => {
       req.body,
       user,
     );
-
-    res.status(200).json({
+    sendResponse(res, {
+      statusCode: 200,
       success: true,
       message: "Issue updated successfully",
       data: result,
@@ -131,9 +135,51 @@ const updateIssue = async (req: AuthRequest, res: Response): Promise<void> => {
           ? 403
           : 500;
 
-    res.status(statusCode).json({
+    sendResponse(res, {
+      statusCode: statusCode,
       success: false,
       message: err.message,
+      error: error,
+    });
+  }
+};
+
+const updateIssueStatus = async (
+  req: AuthRequest,
+  res: Response,
+): Promise<void> => {
+  try {
+    const issueId = Number(req.params.id);
+
+    const { status } = req.body;
+
+    const allowedStatus = ["open", "in_progress", "resolved"];
+
+    if (!allowedStatus.includes(status)) {
+      sendResponse(res, {
+        statusCode: 400,
+        success: false,
+        message: "Invalid status value",
+      });
+
+      return;
+    }
+
+    const result = await issueService.updateIssueStatusIntoDB(issueId, status);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Issue status updated successfully",
+      data: result,
+    });
+  } catch (error) {
+    const err = error as Error;
+    sendResponse(res, {
+      statusCode: 500,
+      success: false,
+      message: err.message,
+      error: error,
     });
   }
 };
@@ -143,4 +189,5 @@ export const issueController = {
   getAllIssues,
   getSingleIssue,
   updateIssue,
+  updateIssueStatus,
 };

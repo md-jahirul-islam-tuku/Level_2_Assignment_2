@@ -211,9 +211,44 @@ const updateIssueIntoDB = async (
   return result.rows[0];
 };
 
+const updateIssueStatusIntoDB = async (
+  issueId: number,
+  status: "open" | "in_progress" | "resolved",
+) => {
+  const issueResult = await pool.query(
+    `
+        SELECT *
+        FROM issues
+        WHERE id = $1
+        `,
+    [issueId],
+  );
+
+  const existingIssue = issueResult.rows[0];
+
+  if (!existingIssue) {
+    throw new Error("Issue not found");
+  }
+
+  const query = `
+      UPDATE issues
+      SET
+        status = $1,
+        updated_at =
+          CURRENT_TIMESTAMP
+      WHERE id = $2
+      RETURNING *
+    `;
+
+  const result = await pool.query(query, [status, issueId]);
+
+  return result.rows[0];
+};
+
 export const issueService = {
   createIssueIntoDB,
   getAllIssuesFromDB,
   getSingleIssueFromDB,
   updateIssueIntoDB,
+  updateIssueStatusIntoDB,
 };
