@@ -34,8 +34,8 @@ const logInUser = async (payload: { email: string; password: string }) => {
     throw new Error("Invalid Credentials!");
   }
 
-  // 2. Compare the password -> Done
   const user = userData.rows[0];
+  const { id, name, role, created_at, updated_at } = user;
   const matchedPassword = await bcrypt.compare(password, user.password);
 
   if (!matchedPassword) {
@@ -50,15 +50,18 @@ const logInUser = async (payload: { email: string; password: string }) => {
     role: user.role,
   };
 
-  const accessToken = jwt.sign(jwtpayload, config.jwt_secret as string, {
+  const token = jwt.sign(jwtpayload, config.jwt_secret as string, {
     expiresIn: "1d",
   });
 
   const refreshToken = jwt.sign(jwtpayload, config.refresh_secret as string, {
     expiresIn: "10d",
   });
-
-  return { accessToken, refreshToken };
+  return {
+    token,
+    refreshToken,
+    user: { id, name, email, role, created_at, updated_at },
+  };
 };
 
 const generateRefreshToken = async (token: string) => {

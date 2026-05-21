@@ -40,14 +40,15 @@ export const login = async (req: Request, res: Response) => {
       httpOnly: true,
       sameSite: "lax",
     });
-
-    res.status(200).json({
+    sendResponse(res, {
+      statusCode: 200,
       success: true,
       message: "Login successfully!",
       data: result,
     });
   } catch (error: any) {
-    res.status(500).json({
+    sendResponse(res, {
+      statusCode: 500,
       success: false,
       message: error.message,
       error: error,
@@ -60,13 +61,15 @@ export const refreshToken = async (req: Request, res: Response) => {
     const result = await authService.generateRefreshToken(
       req.cookies.refreshToken,
     );
-    res.status(200).json({
+    sendResponse(res, {
+      statusCode: 200,
       success: true,
       message: "Access token generated!",
       data: result,
     });
   } catch (error: any) {
-    res.status(500).json({
+    sendResponse(res, {
+      statusCode: 500,
       success: false,
       message: error.message,
       error: error,
