@@ -37,11 +37,6 @@ const createIssue = async (req: AuthRequest, res: Response) => {
 const getAllIssues = async (req: Request, res: Response): Promise<void> => {
   try {
     const result = await issueService.getAllIssuesFromDB(req.query);
-
-    res.status(200).json({
-      success: true,
-      data: result,
-    });
     sendResponse(res, {
       statusCode: 200,
       success: true,
@@ -58,7 +53,50 @@ const getAllIssues = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
+const getSingleIssue = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const id = Number(req.params.id);
+
+    // INVALID ID
+    if (isNaN(id)) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid issue ID",
+      });
+
+      return;
+    }
+
+    const result = await issueService.getSingleIssueFromDB(id);
+
+    // NOT FOUND
+    if (!result) {
+      sendResponse(res, {
+        statusCode: 404,
+        success: false,
+        message: "Issue not found",
+      });
+      return;
+    }
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Issue retrieved successfully",
+      data: result,
+    });
+  } catch (error: any) {
+    sendResponse(res, {
+      statusCode: 500,
+      success: false,
+      message: error.message,
+      error: error,
+    });
+  }
+};
+
 export const issueController = {
   createIssue,
   getAllIssues,
+  getSingleIssue,
 };
