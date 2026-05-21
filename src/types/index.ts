@@ -23,3 +23,9 @@ export interface JwtPayload {
 export interface AuthRequest extends Request {
   user?: JwtPayload;
 }
+
+export type QueryParams = {
+  sort?: string;
+  type?: string;
+  status?: string;
+};

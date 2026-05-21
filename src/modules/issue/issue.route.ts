@@ -11,4 +11,10 @@ router.post(
   issueController.createIssue,
 );
 
+router.get(
+  "/",
+  auth(USER_ROLE.contributor, USER_ROLE.maintainer),
+  issueController.getAllIssues,
+);
+
 export const issueRoutes = router;

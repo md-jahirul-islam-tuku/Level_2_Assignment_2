@@ -1,4 +1,5 @@
 import { pool } from "../../db";
+import type { QueryParams } from "../../types";
 
 const createIssueIntoDB = async (
   payload: {
@@ -28,6 +29,90 @@ const createIssueIntoDB = async (
   return result.rows[0];
 };
 
+const getAllIssuesFromDB = async (queryParams: QueryParams) => {
+  const { sort = "newest", type, status } = queryParams;
+
+  const conditions: string[] = [];
+  const values: string[] = [];
+
+  //* FILTER: type
+  if (type) {
+    values.push(type);
+    conditions.push(`type = $${values.length}`);
+  }
+
+  //* FILTER: status
+  if (status) {
+    values.push(status);
+    conditions.push(`status = $${values.length}`);
+  }
+
+  const whereClause =
+    conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+
+  //* SORT
+  const orderBy =
+    sort === "oldest" ? "ORDER BY created_at ASC" : "ORDER BY created_at DESC";
+
+  const issuesQuery = `
+    SELECT *
+    FROM issues
+    ${whereClause}
+    ${orderBy}
+  `;
+
+  const issuesResult = await pool.query(issuesQuery, values);
+
+  const issues = issuesResult.rows;
+
+  /*
+      * Get newest issues: /api/issues
+      * Oldest first: /api/issues?sort=oldest
+      * Only bugs: /api/issues?type=bug
+      * Only resolved: /api/issues?status=resolved
+      * Combined filter: /api/issues?type=bug&status=open&sort=newest
+  */
+
+  //! No issues found
+  if (!issues.length) {
+    throw new Error("Issue not found!!");
+  }
+
+  const reporterIds = [...new Set(issues.map((issue) => issue.reporter_id))];
+
+  //* GET REPORTERS without JOIN
+  const reportersQuery = `
+    SELECT id, name, role
+    FROM users
+    WHERE id = ANY($1)
+  `;
+
+  const reportersResult = await pool.query(reportersQuery, [reporterIds]);
+
+  const reporterMap = reportersResult.rows.reduce(
+    (acc, reporter) => {
+      acc[reporter.id] = reporter;
+
+      return acc;
+    },
+    {} as Record<number, any>,
+  );
+
+  const formattedIssues = issues.map((issue) => ({
+    id: issue.id,
+    title: issue.title,
+    description: issue.description,
+    type: issue.type,
+    status: issue.status,
+    reporter: reporterMap[issue.reporter_id] || null,
+    created_at: issue.created_at,
+    updated_at: issue.updated_at,
+  }));
+
+  return formattedIssues;
+};
+
 export const issueService = {
   createIssueIntoDB,
+  getAllIssuesFromDB,
 };

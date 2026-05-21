@@ -32,9 +32,8 @@ const signup = async (req: Request, res: Response) => {
 const login = async (req: Request, res: Response) => {
   try {
     const result = await authService.logInUser(req.body);
-    console.log(result);
 
-    const { refreshToken } = result;
+    const { token, refreshToken, user } = result;
 
     res.cookie("refreshToken", refreshToken, {
       secure: false, // In production => True
@@ -45,7 +44,7 @@ const login = async (req: Request, res: Response) => {
       statusCode: 200,
       success: true,
       message: "Login successfully!",
-      data: result,
+      data: { token, user },
     });
   } catch (error: any) {
     sendResponse(res, {
