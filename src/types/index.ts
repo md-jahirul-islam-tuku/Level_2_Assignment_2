@@ -29,3 +29,14 @@ export type QueryParams = {
   type?: string;
   status?: string;
 };
+
+export type UpdateIssuePayload = {
+  title?: string;
+  description?: string;
+  type?: "bug" | "feature_request";
+};
+
+export type UserPayload = {
+  id: number;
+  role: "contributor" | "maintainer";
+};

@@ -1,5 +1,5 @@
 import { pool } from "../../db";
-import type { QueryParams } from "../../types";
+import type { QueryParams, UpdateIssuePayload, UserPayload } from "../../types";
 
 const createIssueIntoDB = async (
   payload: {
@@ -151,8 +151,69 @@ const getSingleIssueFromDB = async (id: number) => {
   };
 };
 
+const updateIssueIntoDB = async (
+  issueId: number,
+  payload: UpdateIssuePayload,
+  user: UserPayload,
+) => {
+  // CHECK ISSUE EXISTS
+  const issueResult = await pool.query(
+    `
+      SELECT *
+      FROM issues
+      WHERE id = $1
+      `,
+    [issueId],
+  );
+
+  const existingIssue = issueResult.rows[0];
+
+  if (!existingIssue) {
+    throw new Error("Issue not found");
+  }
+
+  // AUTHORIZATION CHECK
+  const isMaintainer = user.role === "maintainer";
+
+  const isOwner = existingIssue.reporter_id === user.id;
+
+  const isOpen = existingIssue.status === "open";
+
+  const canUpdate = isMaintainer || (isOwner && isOpen);
+
+  if (!canUpdate) {
+    throw new Error("You are not authorized to update this issue");
+  }
+
+  // KEEP OLD VALUES IF NOT PROVIDED
+  const updatedTitle = payload.title ?? existingIssue.title;
+
+  const updatedDescription = payload.description ?? existingIssue.description;
+
+  const updatedType = payload.type ?? existingIssue.type;
+
+  // UPDATE ISSUE
+  const updateQuery = `
+    UPDATE issues
+    SET
+      title = $1,
+      description = $2,
+      type = $3,
+      updated_at = CURRENT_TIMESTAMP
+    WHERE id = $4
+    RETURNING *
+  `;
+
+  const values = [updatedTitle, updatedDescription, updatedType, issueId];
+
+  const result = await pool.query(updateQuery, values);
+
+  return result.rows[0];
+};
+
 export const issueService = {
   createIssueIntoDB,
   getAllIssuesFromDB,
   getSingleIssueFromDB,
+  updateIssueIntoDB,
 };

@@ -95,8 +95,52 @@ const getSingleIssue = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
+const updateIssue = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const issueId = Number(req.params.id);
+
+    const user = req.user;
+
+    if (!user) {
+      res.status(401).json({
+        success: false,
+        message: "Unauthorized access",
+      });
+
+      return;
+    }
+
+    const result = await issueService.updateIssueIntoDB(
+      issueId,
+      req.body,
+      user,
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Issue updated successfully",
+      data: result,
+    });
+  } catch (error) {
+    const err = error as Error;
+
+    const statusCode =
+      err.message === "Issue not found"
+        ? 404
+        : err.message.includes("authorized")
+          ? 403
+          : 500;
+
+    res.status(statusCode).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
 export const issueController = {
   createIssue,
   getAllIssues,
   getSingleIssue,
+  updateIssue,
 };
