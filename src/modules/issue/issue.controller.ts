@@ -16,7 +16,6 @@ const createIssue = async (
         success: false,
         message: "Unauthorized access",
       });
-      return;
     }
 
     const result = await issueService.createIssueIntoDB(req.body, reporterId);
@@ -100,6 +99,14 @@ const updateIssue = async (
   try {
     const issueId = Number(req.params.id);
 
+    if (isNaN(issueId)) {
+      return sendResponse(res, {
+        statusCode: 400,
+        success: false,
+        message: "Invalid issue ID",
+      });
+    }
+
     const user = req.user;
 
     if (!user) {
@@ -135,6 +142,14 @@ const updateIssueStatus = async (
   try {
     const issueId = Number(req.params.id);
 
+    if (isNaN(issueId)) {
+      return sendResponse(res, {
+        statusCode: 400,
+        success: false,
+        message: "Invalid issue ID",
+      });
+    }
+
     const { status } = req.body;
 
     const allowedStatus = ["open", "in_progress", "resolved"];
@@ -169,6 +184,14 @@ const deleteIssue = async (
 ): Promise<void> => {
   try {
     const issueId = Number(req.params.id);
+
+    if (isNaN(issueId)) {
+      return sendResponse(res, {
+        statusCode: 400,
+        success: false,
+        message: "Invalid issue ID",
+      });
+    }
 
     await issueService.deleteIssueFromDB(issueId);
 

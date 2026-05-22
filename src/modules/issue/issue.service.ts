@@ -1,9 +1,6 @@
 import type { JwtPayload } from "jsonwebtoken";
 import { pool } from "../../db";
-import type {
-  QueryParams,
-  UpdateIssuePayload,
-} from "../../types";
+import type { QueryParams, UpdateIssuePayload } from "../../types";
 
 const createIssueIntoDB = async (
   payload: {
@@ -13,7 +10,14 @@ const createIssueIntoDB = async (
   },
   reporterId: number,
 ) => {
+  // title, description length validation
   const { title, description, type } = payload;
+  if (title.length > 150) {
+    throw new Error("Title cannot exceed 150 characters");
+  }
+  if (description.length < 20) {
+    throw new Error("Description must be at least 20 characters");
+  }
 
   const query = `
     INSERT INTO issues (
@@ -23,7 +27,15 @@ const createIssueIntoDB = async (
       reporter_id
     )
     VALUES ($1, $2, $3, $4)
-    RETURNING *
+    RETURNING
+    id,
+    title,
+    description,
+    type,
+    status,
+    reporter_id,
+    created_at,
+    updated_at
   `;
 
   const values = [title, description, type, reporterId];
@@ -32,6 +44,8 @@ const createIssueIntoDB = async (
 
   return result.rows[0];
 };
+
+// query param validation
 
 const getAllIssuesFromDB = async (queryParams: QueryParams) => {
   const { sort = "newest", type, status } = queryParams;
@@ -58,6 +72,16 @@ const getAllIssuesFromDB = async (queryParams: QueryParams) => {
   const orderBy =
     sort === "oldest" ? "ORDER BY created_at ASC" : "ORDER BY created_at DESC";
 
+  //* query param validation
+  const validTypes = ["bug", "feature_request"];
+  const validStatus = ["open", "in_progress", "resolved"];
+  if (type && !validTypes.includes(type)) {
+    throw new Error("Invalid issue type");
+  }
+  if (status && !validStatus.includes(status)) {
+    throw new Error("Invalid issue status");
+  }
+
   const issuesQuery = `
     SELECT *
     FROM issues
@@ -75,11 +99,10 @@ const getAllIssuesFromDB = async (queryParams: QueryParams) => {
    * Only bugs: /api/issues?type=bug
    * Only resolved: /api/issues?status=resolved
    * Combined filter: /api/issues?type=bug&status=open&sort=newest
-  */
+   */
 
-  //! No issues found
   if (!issues.length) {
-    throw new Error("Issue not found!!");
+    return [];
   }
 
   const reporterIds = [...new Set(issues.map((issue) => issue.reporter_id))];
@@ -205,7 +228,15 @@ const updateIssueIntoDB = async (
       type = $3,
       updated_at = CURRENT_TIMESTAMP
     WHERE id = $4
-    RETURNING *
+    RETURNING
+    id,
+    title,
+    description,
+    type,
+    status,
+    reporter_id,
+    created_at,
+    updated_at
   `;
 
   const values = [updatedTitle, updatedDescription, updatedType, issueId];
@@ -241,8 +272,16 @@ const updateIssueStatusIntoDB = async (
         updated_at =
           CURRENT_TIMESTAMP
       WHERE id = $2
-      RETURNING *
-    `;
+      RETURNING
+        id,
+        title,
+        description,
+        type,
+        status,
+        reporter_id,
+        created_at,
+        updated_at
+        `;
 
   const result = await pool.query(query, [status, issueId]);
 
@@ -253,7 +292,7 @@ const deleteIssueFromDB = async (issueId: number) => {
   const query = `
       DELETE FROM issues
       WHERE id = $1
-      RETURNING *
+      RETURNING id
     `;
 
   const result = await pool.query(query, [issueId]);
