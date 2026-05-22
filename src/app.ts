@@ -30,7 +30,7 @@ app.use("/api/auth", authRoute);
 app.use("/api/issues", issueRoutes);
 
 // If not found route
-app.use("*", (_, res) => {
+app.use((req, res) => {
   res.status(404).json({
     success: false,
     message: "Route not found",

@@ -53,13 +53,13 @@ const getAllIssuesFromDB = async (queryParams: QueryParams) => {
   const conditions: string[] = [];
   const values: string[] = [];
 
-  //* FILTER: type
+  //* filter: type
   if (type) {
     values.push(type);
     conditions.push(`type = $${values.length}`);
   }
 
-  //* FILTER: status
+  //* filter: status
   if (status) {
     values.push(status);
     conditions.push(`status = $${values.length}`);
@@ -68,7 +68,7 @@ const getAllIssuesFromDB = async (queryParams: QueryParams) => {
   const whereClause =
     conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
-  //* SORT
+  //* sort
   const orderBy =
     sort === "oldest" ? "ORDER BY created_at ASC" : "ORDER BY created_at DESC";
 
@@ -94,11 +94,11 @@ const getAllIssuesFromDB = async (queryParams: QueryParams) => {
   const issues = issuesResult.rows;
 
   /*
-   * Get newest issues: /api/issues
-   * Oldest first: /api/issues?sort=oldest
-   * Only bugs: /api/issues?type=bug
-   * Only resolved: /api/issues?status=resolved
-   * Combined filter: /api/issues?type=bug&status=open&sort=newest
+   * get newest issues: /api/issues
+   * oldest first: /api/issues?sort=oldest
+   * only bugs: /api/issues?type=bug
+   * only resolved: /api/issues?status=resolved
+   * combined filter: /api/issues?type=bug&status=open&sort=newest
    */
 
   if (!issues.length) {
@@ -107,7 +107,7 @@ const getAllIssuesFromDB = async (queryParams: QueryParams) => {
 
   const reporterIds = [...new Set(issues.map((issue) => issue.reporter_id))];
 
-  //* GET REPORTERS without JOIN
+  //* get reporters without join
   const reportersQuery = `
     SELECT id, name, role
     FROM users
@@ -154,7 +154,7 @@ const getSingleIssueFromDB = async (id: number) => {
     return null;
   }
 
-  //* GET REPORTER
+  //* get reporter
   const reporterQuery = `
     SELECT id, name, role
     FROM users
@@ -165,7 +165,7 @@ const getSingleIssueFromDB = async (id: number) => {
 
   const reporter = reporterResult.rows[0] || null;
 
-  //* FORMAT RESPONSE
+  //* format response
   return {
     id: issue.id,
     title: issue.title,
@@ -183,7 +183,7 @@ const updateIssueIntoDB = async (
   payload: UpdateIssuePayload,
   user: JwtPayload,
 ) => {
-  // CHECK ISSUE EXISTS
+  // check issue exists
   const issueResult = await pool.query(
     `
       SELECT *
@@ -199,7 +199,7 @@ const updateIssueIntoDB = async (
     throw new Error("Issue not found");
   }
 
-  // AUTHORIZATION CHECK
+  // authorization check
   const isMaintainer = user.role === "maintainer";
 
   const isOwner = existingIssue.reporter_id === user.id;
@@ -212,14 +212,14 @@ const updateIssueIntoDB = async (
     throw new Error("You are not authorized to update this issue");
   }
 
-  // KEEP OLD VALUES IF NOT PROVIDED
+  // keep old values if not provided
   const updatedTitle = payload.title ?? existingIssue.title;
 
   const updatedDescription = payload.description ?? existingIssue.description;
 
   const updatedType = payload.type ?? existingIssue.type;
 
-  // UPDATE ISSUE
+  // update issue
   const updateQuery = `
     UPDATE issues
     SET

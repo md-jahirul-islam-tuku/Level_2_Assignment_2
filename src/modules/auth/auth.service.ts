@@ -7,7 +7,8 @@ import config from "../../config";
 const signUpUser = async (user: IUser) => {
   const { name, email, password, role } = user;
   const hashedPassword = await bcrypt.hash(password, 10);
-  // Duplicate email check
+
+  // duplicate email check
   const existingUser = await pool.query(
     `
     SELECT *
@@ -73,7 +74,7 @@ const logInUser = async (payload: { email: string; password: string }) => {
     throw new Error("Invalid password!");
   }
 
-  // Generate jwt token
+  // generate jwt token
   const jwtPayload = {
     id: user.id,
     name: user.name,

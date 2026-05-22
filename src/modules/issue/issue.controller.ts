@@ -57,7 +57,7 @@ const getSingleIssue = async (
   try {
     const id = Number(req.params.id);
 
-    // INVALID ID
+    // invalid id
     if (isNaN(id)) {
       sendResponse(res, {
         statusCode: 400,
@@ -70,7 +70,7 @@ const getSingleIssue = async (
 
     const result = await issueService.getSingleIssueFromDB(id);
 
-    // NOT FOUND
+    // not found
     if (!result) {
       sendResponse(res, {
         statusCode: 404,

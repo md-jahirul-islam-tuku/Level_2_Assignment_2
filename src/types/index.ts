@@ -3,30 +3,34 @@ export const USER_ROLE = {
   maintainer: "maintainer",
 } as const;
 
-export type ROLES = "contributor" | "maintainer";
+export type ROLES = (typeof USER_ROLE)[keyof typeof USER_ROLE];
+
+export type IssueType = "bug" | "feature_request";
+
+export type IssueStatus = "open" | "in_progress" | "resolved";
 
 export interface IUser {
   name: string;
   email: string;
   password: string;
-  role?: string;
+  role?: ROLES;
 }
 
 export type TJwtUser = {
   id: number;
   name: string;
   email: string;
-  role: "contributor" | "maintainer";
+  role: ROLES;
 };
 
 export type QueryParams = {
-  sort?: string;
-  type?: string;
-  status?: string;
+  sort?: "newest" | "oldest";
+  type?: IssueType;
+  status?: IssueStatus;
 };
 
 export type UpdateIssuePayload = {
   title?: string;
   description?: string;
-  type?: "bug" | "feature_request";
+  type?: IssueType;
 };

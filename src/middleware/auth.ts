@@ -11,27 +11,25 @@ const auth =
     try {
       const token = req.headers.authorization;
 
-      // TOKEN CHECK
+      // token check
       if (!token) {
         sendResponse(res, {
           statusCode: 401,
           success: false,
           message: "Unauthorized access!!",
         });
-
         return;
       }
 
-      // VERIFY TOKEN
-      const decoded = jwt.verify(
-        token,
-        config.jwt_secret as string,
-      ) as JwtPayload;
+      // verify token
+      const decoded = jwt.verify(token, config.jwt_secret) as JwtPayload;
 
-      // CHECK USER EXISTS
+      // check user exists
       const userData = await pool.query(
-        `
-          SELECT *
+        `SELECT
+          id,
+          email,
+          role
           FROM users
           WHERE email = $1
           `,
@@ -50,7 +48,7 @@ const auth =
         return;
       }
 
-      // ROLE CHECK
+      // role check
       if (roles.length && !roles.includes(user.role)) {
         sendResponse(res, {
           statusCode: 403,
