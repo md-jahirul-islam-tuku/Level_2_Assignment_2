@@ -38,10 +38,21 @@ const getAllIssues = async (
 ): Promise<void> => {
   try {
     const result = await issueService.getAllIssuesFromDB(req.query);
+
+    if (!result.length) {
+      sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "No issues found",
+        data: [],
+      });
+
+      return;
+    }
+
     sendResponse(res, {
       statusCode: 200,
       success: true,
-      message: "All issues retrieved successfully",
       data: result,
     });
   } catch (error) {
@@ -83,7 +94,6 @@ const getSingleIssue = async (
     sendResponse(res, {
       statusCode: 200,
       success: true,
-      message: "Issue retrieved successfully",
       data: result,
     });
   } catch (error) {
