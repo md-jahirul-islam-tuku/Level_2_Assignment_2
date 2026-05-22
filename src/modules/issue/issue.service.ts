@@ -1,5 +1,10 @@
+import type { JwtPayload } from "jsonwebtoken";
 import { pool } from "../../db";
-import type { QueryParams, UpdateIssuePayload, UserPayload } from "../../types";
+import type {
+  QueryParams,
+  TJwtUser,
+  UpdateIssuePayload,
+} from "../../types";
 
 const createIssueIntoDB = async (
   payload: {
@@ -154,7 +159,7 @@ const getSingleIssueFromDB = async (id: number) => {
 const updateIssueIntoDB = async (
   issueId: number,
   payload: UpdateIssuePayload,
-  user: UserPayload,
+  user: JwtPayload,
 ) => {
   // CHECK ISSUE EXISTS
   const issueResult = await pool.query(
@@ -245,10 +250,29 @@ const updateIssueStatusIntoDB = async (
   return result.rows[0];
 };
 
+const deleteIssueFromDB = async (issueId: number) => {
+  const query = `
+      DELETE FROM issues
+      WHERE id = $1
+      RETURNING *
+    `;
+
+  const result = await pool.query(query, [issueId]);
+
+  const deletedIssue = result.rows[0];
+
+  if (!deletedIssue) {
+    throw new Error("Issue not found");
+  }
+
+  return deletedIssue;
+};
+
 export const issueService = {
   createIssueIntoDB,
   getAllIssuesFromDB,
   getSingleIssueFromDB,
   updateIssueIntoDB,
   updateIssueStatusIntoDB,
+  deleteIssueFromDB,
 };

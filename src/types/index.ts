@@ -1,4 +1,3 @@
-import type { Request } from "express";
 
 export const USER_ROLE = {
   contributor: "contributor",
@@ -14,15 +13,12 @@ export interface IUser {
   role?: string;
 }
 
-export interface JwtPayload {
+export interface TJwtUser {
   id: number;
   email: string;
   role: "contributor" | "maintainer";
 }
 
-export interface AuthRequest extends Request {
-  user?: JwtPayload;
-}
 
 export type QueryParams = {
   sort?: string;
@@ -36,7 +32,3 @@ export type UpdateIssuePayload = {
   type?: "bug" | "feature_request";
 };
 
-export type UserPayload = {
-  id: number;
-  role: "contributor" | "maintainer";
-};

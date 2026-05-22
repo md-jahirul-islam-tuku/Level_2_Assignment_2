@@ -1,9 +1,8 @@
 import type { Request, Response } from "express";
 import { issueService } from "./issue.service";
-import type { AuthRequest } from "../../types";
 import sendResponse from "../../utils/sendResponse";
 
-const createIssue = async (req: AuthRequest, res: Response) => {
+const createIssue = async (req: Request, res: Response) => {
   try {
     const reporterId = req.user?.id;
 
@@ -99,7 +98,7 @@ const getSingleIssue = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-const updateIssue = async (req: AuthRequest, res: Response): Promise<void> => {
+const updateIssue = async (req: Request, res: Response): Promise<void> => {
   try {
     const issueId = Number(req.params.id);
 
@@ -117,7 +116,7 @@ const updateIssue = async (req: AuthRequest, res: Response): Promise<void> => {
     const result = await issueService.updateIssueIntoDB(
       issueId,
       req.body,
-      user,
+      user
     );
     sendResponse(res, {
       statusCode: 200,
@@ -145,7 +144,7 @@ const updateIssue = async (req: AuthRequest, res: Response): Promise<void> => {
 };
 
 const updateIssueStatus = async (
-  req: AuthRequest,
+  req: Request,
   res: Response,
 ): Promise<void> => {
   try {
@@ -184,10 +183,36 @@ const updateIssueStatus = async (
   }
 };
 
+const deleteIssue = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const issueId = Number(req.params.id);
+
+    await issueService.deleteIssueFromDB(issueId);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Issue deleted successfully",
+    });
+  } catch (error) {
+    const err = error as Error;
+
+    const statusCode = err.message === "Issue not found" ? 404 : 500;
+
+    sendResponse(res, {
+      statusCode: statusCode,
+      success: false,
+      message: err.message,
+      error: error,
+    });
+  }
+};
+
 export const issueController = {
   createIssue,
   getAllIssues,
   getSingleIssue,
   updateIssue,
   updateIssueStatus,
+  deleteIssue,
 };
