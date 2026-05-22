@@ -1,13 +1,17 @@
-import type { Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 import { issueService } from "./issue.service";
 import sendResponse from "../../utils/sendResponse";
 
-const createIssue = async (req: Request, res: Response) => {
+const createIssue = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
   try {
     const reporterId = req.user?.id;
 
     if (!reporterId) {
-      sendResponse(res, {
+      return sendResponse(res, {
         statusCode: 401,
         success: false,
         message: "Unauthorized access",
@@ -24,17 +28,15 @@ const createIssue = async (req: Request, res: Response) => {
       data: result,
     });
   } catch (error) {
-    const err = error as Error;
-    sendResponse(res, {
-      statusCode: 500,
-      success: false,
-      message: err.message,
-      error: error,
-    });
+    next(error);
   }
 };
 
-const getAllIssues = async (req: Request, res: Response): Promise<void> => {
+const getAllIssues = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
   try {
     const result = await issueService.getAllIssuesFromDB(req.query);
     sendResponse(res, {
@@ -44,17 +46,15 @@ const getAllIssues = async (req: Request, res: Response): Promise<void> => {
       data: result,
     });
   } catch (error) {
-    const err = error as Error;
-    sendResponse(res, {
-      statusCode: 500,
-      success: false,
-      message: err.message,
-      error: error,
-    });
+    next(error);
   }
 };
 
-const getSingleIssue = async (req: Request, res: Response): Promise<void> => {
+const getSingleIssue = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
   try {
     const id = Number(req.params.id);
 
@@ -88,17 +88,15 @@ const getSingleIssue = async (req: Request, res: Response): Promise<void> => {
       data: result,
     });
   } catch (error) {
-    const err = error as Error;
-    sendResponse(res, {
-      statusCode: 500,
-      success: false,
-      message: err.message,
-      error: error,
-    });
+    next(error);
   }
 };
 
-const updateIssue = async (req: Request, res: Response): Promise<void> => {
+const updateIssue = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
   try {
     const issueId = Number(req.params.id);
 
@@ -116,7 +114,7 @@ const updateIssue = async (req: Request, res: Response): Promise<void> => {
     const result = await issueService.updateIssueIntoDB(
       issueId,
       req.body,
-      user
+      user,
     );
     sendResponse(res, {
       statusCode: 200,
@@ -125,27 +123,14 @@ const updateIssue = async (req: Request, res: Response): Promise<void> => {
       data: result,
     });
   } catch (error) {
-    const err = error as Error;
-
-    const statusCode =
-      err.message === "Issue not found"
-        ? 404
-        : err.message.includes("authorized")
-          ? 403
-          : 500;
-
-    sendResponse(res, {
-      statusCode: statusCode,
-      success: false,
-      message: err.message,
-      error: error,
-    });
+    next(error);
   }
 };
 
 const updateIssueStatus = async (
   req: Request,
   res: Response,
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const issueId = Number(req.params.id);
@@ -173,17 +158,15 @@ const updateIssueStatus = async (
       data: result,
     });
   } catch (error) {
-    const err = error as Error;
-    sendResponse(res, {
-      statusCode: 500,
-      success: false,
-      message: err.message,
-      error: error,
-    });
+    next(error);
   }
 };
 
-const deleteIssue = async (req: Request, res: Response): Promise<void> => {
+const deleteIssue = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
   try {
     const issueId = Number(req.params.id);
 
@@ -195,16 +178,7 @@ const deleteIssue = async (req: Request, res: Response): Promise<void> => {
       message: "Issue deleted successfully",
     });
   } catch (error) {
-    const err = error as Error;
-
-    const statusCode = err.message === "Issue not found" ? 404 : 500;
-
-    sendResponse(res, {
-      statusCode: statusCode,
-      success: false,
-      message: err.message,
-      error: error,
-    });
+    next(error);
   }
 };
 

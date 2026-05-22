@@ -2,7 +2,6 @@ import type { JwtPayload } from "jsonwebtoken";
 import { pool } from "../../db";
 import type {
   QueryParams,
-  TJwtUser,
   UpdateIssuePayload,
 } from "../../types";
 
@@ -76,7 +75,7 @@ const getAllIssuesFromDB = async (queryParams: QueryParams) => {
    * Only bugs: /api/issues?type=bug
    * Only resolved: /api/issues?status=resolved
    * Combined filter: /api/issues?type=bug&status=open&sort=newest
-   */
+  */
 
   //! No issues found
   if (!issues.length) {

@@ -1,21 +1,53 @@
 import bcrypt from "bcryptjs";
 import { pool } from "../../db";
-import type { IUser } from "../../types";
+import type { IUser, TJwtUser } from "../../types";
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import config from "../../config";
 
 const signUpUser = async (user: IUser) => {
   const { name, email, password, role } = user;
   const hashedPassword = await bcrypt.hash(password, 10);
+  // Duplicate email check
+  const existingUser = await pool.query(
+    `
+    SELECT *
+    FROM users
+    WHERE email = $1
+    `,
+    [email],
+  );
+
+  if (existingUser.rows.length) {
+    throw new Error("User already exists");
+  }
 
   const result = await pool.query(
     `
-     INSERT INTO users(name,email,password,role) VALUES($1,$2,$3,COALESCE($4,'contributor')) RETURNING *
+    INSERT INTO users (
+      name,
+      email,
+      password,
+      role
+    )
+    VALUES (
+      $1,
+      $2,
+      $3,
+      COALESCE(
+        $4,
+        'contributor'
+      )
+    )
+    RETURNING
+      id,
+      name,
+      email,
+      role,
+      created_at,
+      updated_at
     `,
     [name, email, hashedPassword, role],
   );
-
-  delete result.rows[0].password;
 
   return result;
 };
@@ -23,7 +55,6 @@ const signUpUser = async (user: IUser) => {
 const logInUser = async (payload: { email: string; password: string }) => {
   const { email, password } = payload;
 
-  // Check the user if exists
   const userData = await pool.query(
     `
     SELECT * FROM users WHERE email=$1
@@ -42,21 +73,22 @@ const logInUser = async (payload: { email: string; password: string }) => {
     throw new Error("Invalid password!");
   }
 
-  // Generate Token
-  const jwtpayload = {
+  // Generate jwt token
+  const jwtPayload = {
     id: user.id,
     name: user.name,
     email: user.email,
     role: user.role,
   };
 
-  const token = jwt.sign(jwtpayload, config.jwt_secret as string, {
+  const token = jwt.sign(jwtPayload, config.jwt_secret as string, {
     expiresIn: "1d",
   });
 
-  const refreshToken = jwt.sign(jwtpayload, config.refresh_secret as string, {
+  const refreshToken = jwt.sign(jwtPayload, config.refresh_secret as string, {
     expiresIn: "10d",
   });
+
   return {
     token,
     refreshToken,
@@ -72,7 +104,7 @@ const generateRefreshToken = async (token: string) => {
   const decoded = jwt.verify(
     token as string,
     config.refresh_secret as string,
-  ) as JwtPayload;
+  ) as TJwtUser;
 
   const userData = await pool.query(
     `
@@ -87,14 +119,14 @@ const generateRefreshToken = async (token: string) => {
     throw new Error("User not found!!");
   }
 
-  const jwtpayload = {
+  const jwtPayload: TJwtUser = {
     id: user.id,
     name: user.name,
     email: user.email,
     role: user.role,
   };
 
-  const accessToken = jwt.sign(jwtpayload, config.jwt_secret as string, {
+  const accessToken = jwt.sign(jwtPayload, config.jwt_secret as string, {
     expiresIn: "1d",
   });
 

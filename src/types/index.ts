@@ -1,4 +1,3 @@
-
 export const USER_ROLE = {
   contributor: "contributor",
   maintainer: "maintainer",
@@ -13,12 +12,12 @@ export interface IUser {
   role?: string;
 }
 
-export interface TJwtUser {
+export type TJwtUser = {
   id: number;
+  name: string;
   email: string;
   role: "contributor" | "maintainer";
-}
-
+};
 
 export type QueryParams = {
   sort?: string;
@@ -31,4 +30,3 @@ export type UpdateIssuePayload = {
   description?: string;
   type?: "bug" | "feature_request";
 };
-
