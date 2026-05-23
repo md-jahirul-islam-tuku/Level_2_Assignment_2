@@ -4,11 +4,11 @@ A role-based backend API for managing internal technical issues and feature requ
 
 ## Live URL
 
-Live API: `[LIVE_URL](https://level-2-assignment-2-ruby.vercel.app/)`
+Live API: `(https://level-2-assignment-2-ruby.vercel.app/)`
 
 ## Repository
 
-GitHub Repository: `[GITHUB_REPO_URL](https://github.com/md-jahirul-islam-tuku/Level_2_Assignment_2)`
+GitHub Repository: `(https://github.com/md-jahirul-islam-tuku/Level_2_Assignment_2)`
 
 ---
 
@@ -101,7 +101,7 @@ This project follows a modular architecture with clear separation of concerns:
 ### 1. Clone Repository
 
 ```bash
-git clone [GITHUB_REPO_URL](https://github.com/md-jahirul-islam-tuku/Level_2_Assignment_2.git)
+git clone (https://github.com/md-jahirul-islam-tuku/Level_2_Assignment_2.git)
 ```
 
 ### 2. Install Dependencies
