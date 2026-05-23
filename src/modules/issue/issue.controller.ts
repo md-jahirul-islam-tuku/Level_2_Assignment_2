@@ -42,9 +42,9 @@ const getAllIssues = async (
 
     if (!result.length) {
       sendResponse(res, {
-        statusCode: 200,
-        success: true,
-        message: "No issues found!",
+        statusCode: 404,
+        success: false,
+        message: "Issues not found!",
         data: [],
       });
 

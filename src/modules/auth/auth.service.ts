@@ -105,7 +105,7 @@ const generateRefreshToken = async (token: string) => {
   const decoded = jwt.verify(
     token as string,
     config.refresh_secret as string,
-  ) as TJwtUser;
+  ) as TJwtUser; // use custom type because in default JwtPayload id, role not guaranteed
 
   const userData = await pool.query(
     `
@@ -120,7 +120,7 @@ const generateRefreshToken = async (token: string) => {
     throw new Error("User not found!!");
   }
 
-  const jwtPayload: TJwtUser = {
+  const jwtPayload: TJwtUser = { // use custom type because in default JwtPayload id, role not guaranteed
     id: user.id,
     name: user.name,
     email: user.email,

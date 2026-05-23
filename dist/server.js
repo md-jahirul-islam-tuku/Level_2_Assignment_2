@@ -190,6 +190,7 @@ var generateRefreshToken = async (token) => {
     throw new Error("User not found!!");
   }
   const jwtPayload = {
+    // use custom type because in default JwtPayload id, role not guaranteed
     id: user.id,
     name: user.name,
     email: user.email,
@@ -595,9 +596,9 @@ var getAllIssues = async (req, res, next) => {
     const result = await issueService.getAllIssuesFromDB(req.query);
     if (!result.length) {
       sendResponse_default(res, {
-        statusCode: 200,
-        success: true,
-        message: "No issues found!",
+        statusCode: 404,
+        success: false,
+        message: "Issues not found!",
         data: []
       });
       return;
