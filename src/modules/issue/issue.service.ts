@@ -1,6 +1,6 @@
 import type { JwtPayload } from "jsonwebtoken";
 import { pool } from "../../db";
-import type { QueryParams, UpdateIssuePayload } from "../../types";
+import type { IssueStatus, QueryParams, Reporter, UpdateIssuePayload } from "../../types";
 
 const createIssueIntoDB = async (
   payload: {
@@ -44,8 +44,6 @@ const createIssueIntoDB = async (
 
   return result.rows[0];
 };
-
-// query param validation
 
 const getAllIssuesFromDB = async (queryParams: QueryParams) => {
   const { sort = "newest", type, status } = queryParams;
@@ -122,7 +120,7 @@ const getAllIssuesFromDB = async (queryParams: QueryParams) => {
 
       return acc;
     },
-    {} as Record<number, any>,
+    {} as Record<number, Reporter>,
   );
 
   const formattedIssues = issues.map((issue) => ({
@@ -248,7 +246,7 @@ const updateIssueIntoDB = async (
 
 const updateIssueStatusIntoDB = async (
   issueId: number,
-  status: "open" | "in_progress" | "resolved",
+  status: IssueStatus
 ) => {
   const issueResult = await pool.query(
     `

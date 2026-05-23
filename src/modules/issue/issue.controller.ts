@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { issueService } from "./issue.service";
 import sendResponse from "../../utils/sendResponse";
+import { ISSUE_STATUS } from "../../types";
 
 const createIssue = async (
   req: Request,
@@ -43,7 +44,7 @@ const getAllIssues = async (
       sendResponse(res, {
         statusCode: 200,
         success: true,
-        message: "No issues found",
+        message: "No issues found!",
         data: [],
       });
 
@@ -87,6 +88,7 @@ const getSingleIssue = async (
         statusCode: 404,
         success: false,
         message: "Issue not found",
+        data: {},
       });
       return;
     }
@@ -162,9 +164,7 @@ const updateIssueStatus = async (
 
     const { status } = req.body;
 
-    const allowedStatus = ["open", "in_progress", "resolved"];
-
-    if (!allowedStatus.includes(status)) {
+    if (!ISSUE_STATUS.includes(status)) {
       sendResponse(res, {
         statusCode: 400,
         success: false,

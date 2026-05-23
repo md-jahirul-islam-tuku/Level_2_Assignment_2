@@ -212,7 +212,7 @@ var sendResponse = (res, data) => {
     success: data.success,
     message: data.message,
     data: data.data,
-    error: data.error
+    errors: data.error
   });
 };
 var sendResponse_default = sendResponse;
@@ -347,6 +347,7 @@ var USER_ROLE = {
   contributor: "contributor",
   maintainer: "maintainer"
 };
+var ISSUE_STATUS = ["open", "in_progress", "resolved"];
 
 // src/modules/issue/issue.service.ts
 var createIssueIntoDB = async (payload, reporterId) => {
@@ -596,7 +597,7 @@ var getAllIssues = async (req, res, next) => {
       sendResponse_default(res, {
         statusCode: 200,
         success: true,
-        message: "No issues found",
+        message: "No issues found!",
         data: []
       });
       return;
@@ -626,7 +627,8 @@ var getSingleIssue = async (req, res, next) => {
       sendResponse_default(res, {
         statusCode: 404,
         success: false,
-        message: "Issue not found"
+        message: "Issue not found",
+        data: {}
       });
       return;
     }
@@ -684,8 +686,7 @@ var updateIssueStatus = async (req, res, next) => {
       });
     }
     const { status } = req.body;
-    const allowedStatus = ["open", "in_progress", "resolved"];
-    if (!allowedStatus.includes(status)) {
+    if (!ISSUE_STATUS.includes(status)) {
       sendResponse_default(res, {
         statusCode: 400,
         success: false,

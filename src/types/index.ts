@@ -7,7 +7,9 @@ export type ROLES = (typeof USER_ROLE)[keyof typeof USER_ROLE];
 
 export type IssueType = "bug" | "feature_request";
 
-export type IssueStatus = "open" | "in_progress" | "resolved";
+export const ISSUE_STATUS = ["open", "in_progress", "resolved"] as const;
+
+export type IssueStatus = (typeof ISSUE_STATUS)[number];
 
 export interface IUser {
   name: string;
@@ -33,4 +35,10 @@ export type UpdateIssuePayload = {
   title?: string;
   description?: string;
   type?: IssueType;
+};
+
+export type Reporter = {
+  id: number;
+  name: string;
+  role: ROLES;
 };
